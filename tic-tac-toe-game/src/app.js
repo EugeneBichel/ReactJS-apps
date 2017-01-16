@@ -20514,37 +20514,91 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 function Square(props) {
-
-    return _react2.default.createElement('button', { className: 'square',
-        onClick: function onClick() {
-            return props.onClick();
-        } });
+    console.log(props.value);
+    return _react2.default.createElement(
+        'button',
+        { className: 'square',
+            onClick: function onClick() {
+                return props.onClick();
+            } },
+        props.value
+    );
 }
 
-function Board(props) {
+var Board = function (_React$Component) {
+    _inherits(Board, _React$Component);
 
-    return _react2.default.createElement(Square, { value: props.square,
-        onClick: function onClick() {
-            return props.onClick(i);
-        } });
-}
+    function Board() {
+        _classCallCheck(this, Board);
 
-var Game = function (_React$Component) {
-    _inherits(Game, _React$Component);
+        return _possibleConstructorReturn(this, (Board.__proto__ || Object.getPrototypeOf(Board)).apply(this, arguments));
+    }
+
+    _createClass(Board, [{
+        key: 'renderSquare',
+        value: function renderSquare(i) {
+            var _this2 = this;
+
+            return _react2.default.createElement(Square, { value: this.props.squares[i],
+                onClick: function onClick() {
+                    return _this2.props.onClick(i);
+                } });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return _react2.default.createElement(
+                'div',
+                null,
+                _react2.default.createElement(
+                    'div',
+                    { className: 'status' },
+                    status
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'board-row' },
+                    this.renderSquare(0),
+                    this.renderSquare(1),
+                    this.renderSquare(2)
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'board-row' },
+                    this.renderSquare(3),
+                    this.renderSquare(4),
+                    this.renderSquare(5)
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'board-row' },
+                    this.renderSquare(6),
+                    this.renderSquare(7),
+                    this.renderSquare(8)
+                )
+            );
+        }
+    }]);
+
+    return Board;
+}(_react2.default.Component);
+
+var Game = function (_React$Component2) {
+    _inherits(Game, _React$Component2);
 
     function Game() {
         _classCallCheck(this, Game);
 
-        var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
+        var _this3 = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
 
-        _this.state = {
-            history: [{
-                squares: Array(9).fill(null)
-            }],
+        _this3.state = {
+            //history: [{
+            squares: Array(9).fill(null),
+            //}],
             xIsNext: true,
             stepNumber: 0
         };
-        return _this;
+        return _this3;
     }
 
     _createClass(Game, [{
@@ -20558,29 +20612,25 @@ var Game = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
-            var _this2 = this;
+            var _this4 = this;
 
-            var history = this.state.history;
-            var current = history[history.length - 1];
-            var winner = calculateWinner(current.squares);
-
-            var moves = history.map(function (step, move) {
-                var desc = move ? 'Move #' + move : 'Game start';
-
-                return _react2.default.createElement(
-                    'li',
-                    { key: move },
-                    _react2.default.createElement(
-                        'a',
-                        { href: '#',
-                            onClick: function onClick() {
-                                return _this2.jumpTo(move);
-                            } },
-                        desc
-                    )
-                );
-            });
-
+            //const history = this.state.history;
+            //const current = history[history.length - 1];
+            var winner = calculateWinner(this.state.squares);
+            /*
+                    const moves = history.map((step, move) => {
+                        const desc = move ?
+                            'Move #' + move:
+                            'Game start';
+            
+                        return (
+                          <li key={move}>
+                              <a href="#"
+                                 onClick={() => this.jumpTo(move)}>{desc}</a>
+                          </li>
+                        );
+                    });
+            */
             var status = void 0;
 
             if (winner) {
@@ -20595,11 +20645,9 @@ var Game = function (_React$Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'game-board' },
-                    _react2.default.createElement(Board, { square: function square(i) {
-                            return current.squares[i];
-                        },
+                    _react2.default.createElement(Board, { squares: this.state.squares,
                         onClick: function onClick(i) {
-                            return _this2.handleClick(i);
+                            return _this4.handleClick(i);
                         } })
                 ),
                 _react2.default.createElement(
@@ -20609,11 +20657,6 @@ var Game = function (_React$Component) {
                         'div',
                         null,
                         status
-                    ),
-                    _react2.default.createElement(
-                        'ol',
-                        null,
-                        moves
                     )
                 )
             );
@@ -20622,9 +20665,9 @@ var Game = function (_React$Component) {
         key: 'handleClick',
         value: function handleClick(i) {
 
-            var history = this.state.history;
-            var current = history[history.length - 1];
-            var squares = current.squares.slice();
+            //const history = this.state.history;
+            //const current = history[history.length - 1];
+            var squares = this.state.squares.slice();
 
             if (calculateWinner(squares) || squares[i]) {
                 return;
@@ -20648,11 +20691,11 @@ function calculateWinner(squares) {
 
     var lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
-    for (var _i = 0; _i < lines.length; _i++) {
-        var _lines$_i = _slicedToArray(lines[_i], 3),
-            a = _lines$_i[0],
-            b = _lines$_i[1],
-            c = _lines$_i[2];
+    for (var i = 0; i < lines.length; i++) {
+        var _lines$i = _slicedToArray(lines[i], 3),
+            a = _lines$i[0],
+            b = _lines$i[1],
+            c = _lines$i[2];
 
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
             return squares[a];
@@ -20661,5 +20704,7 @@ function calculateWinner(squares) {
 
     return null;
 }
+
+//<ol>{moves}</ol>
 
 },{"react":177,"react-dom":26}]},{},[178]);
