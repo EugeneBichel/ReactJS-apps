@@ -1,0 +1,1 @@
+This is developed based on the [React.JS toturial from Facebook](https://facebook.github.io/react/tutorial/tutorial.html)
