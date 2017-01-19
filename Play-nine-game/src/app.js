@@ -20520,10 +20520,9 @@ var StarsFrame = function (_React$Component) {
         key: 'render',
         value: function render() {
 
-            var numberOfStars = Math.floor(Math.random() * 9) + 1; // produces random value between 1 and 9
             var stars = [];
 
-            for (var i = 0; i < numberOfStars; i++) {
+            for (var i = 0; i < this.props.numberOfStars; i++) {
                 stars.push(_react2.default.createElement('span', { key: i, className: 'glyphicon glyphicon-star' }));
             }
 
@@ -20555,12 +20554,14 @@ var ButtonFrame = function (_React$Component2) {
         key: 'render',
         value: function render() {
 
+            var disabled = this.props.selectedNumbers.length === 0;
+
             return _react2.default.createElement(
                 'div',
                 { id: 'button-frame' },
                 _react2.default.createElement(
                     'button',
-                    { className: 'btn btn-primary btn-lg' },
+                    { className: 'btn btn-primary btn-lg', disabled: disabled },
                     '='
                 )
             );
@@ -20583,13 +20584,22 @@ var AnswerFrame = function (_React$Component3) {
         key: 'render',
         value: function render() {
 
+            var props = this.props;
+            var selectedNumbers = props.selectedNumbers.map(function (item) {
+                return _react2.default.createElement(
+                    'span',
+                    { className: 'number', key: item, onClick: props.unselectNumber.bind(null, item) },
+                    item
+                );
+            });
+
             return _react2.default.createElement(
                 'div',
                 { id: 'answer-frame' },
                 _react2.default.createElement(
                     'div',
                     { className: 'well' },
-                    '...'
+                    selectedNumbers
                 )
             );
         }
@@ -20612,12 +20622,15 @@ var NumbersFrame = function (_React$Component4) {
         value: function render() {
 
             var count = 9;
-            var numbers = [];
+            var selectedNumbers = this.props.selectedNumbers;
+            var numbers = [],
+                className = void 0;
 
             for (var i = 1; i <= count; i++) {
+                className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
                 numbers.push(_react2.default.createElement(
                     'div',
-                    { key: i, className: 'number' },
+                    { key: i, onClick: this.props.selectNumber.bind(null, i), className: className },
                     i
                 ));
             }
@@ -20643,12 +20656,40 @@ var Game = function (_React$Component5) {
     function Game() {
         _classCallCheck(this, Game);
 
-        return _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).apply(this, arguments));
+        var _this5 = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
+
+        _this5.state = {
+            numberOfStars: Math.floor(Math.random() * 9) + 1, // produces random value between 1 and 9
+            selectedNumbers: []
+        };
+        return _this5;
     }
 
     _createClass(Game, [{
+        key: 'selectNumber',
+        value: function selectNumber(clickedNumber) {
+
+            if (this.state.selectedNumbers.indexOf(clickedNumber) < 0) {
+                var dbSelectedNumbers = this.state.selectedNumbers;
+                this.setState({ selectedNumbers: dbSelectedNumbers.concat(clickedNumber) });
+            }
+        }
+    }, {
+        key: 'unselectNumber',
+        value: function unselectNumber(clickedNumber) {
+            var selectedNumbers = this.state.selectedNumbers;
+            var indexOfRemovedItem = selectedNumbers.indexOf(clickedNumber);
+
+            selectedNumbers.splice(indexOfRemovedItem, 1);
+
+            this.setState({ selectedNumbers: selectedNumbers });
+        }
+    }, {
         key: 'render',
         value: function render() {
+
+            var numberOfStars = this.state.numberOfStars;
+            var selectedNumbers = this.state.selectedNumbers;
 
             return _react2.default.createElement(
                 'div',
@@ -20660,10 +20701,10 @@ var Game = function (_React$Component5) {
                 ),
                 _react2.default.createElement('hr', null),
                 _react2.default.createElement('div', { className: 'clearfix' }),
-                _react2.default.createElement(StarsFrame, null),
-                _react2.default.createElement(ButtonFrame, null),
-                _react2.default.createElement(AnswerFrame, null),
-                _react2.default.createElement(NumbersFrame, null)
+                _react2.default.createElement(StarsFrame, { numberOfStars: numberOfStars }),
+                _react2.default.createElement(ButtonFrame, { selectedNumbers: selectedNumbers }),
+                _react2.default.createElement(AnswerFrame, { selectedNumbers: selectedNumbers, unselectNumber: this.unselectNumber.bind(this) }),
+                _react2.default.createElement(NumbersFrame, { selectedNumbers: selectedNumbers, selectNumber: this.selectNumber.bind(this) })
             );
         }
     }]);

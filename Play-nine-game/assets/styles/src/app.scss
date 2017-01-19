@@ -46,7 +46,7 @@ hr {
   background: black;
 }
 
-#numbers-frame {
+#numbers-frame, #answer-frame .well {
   .number {
     display: inline-block;
     margin: 0.5em;
@@ -56,5 +56,13 @@ hr {
     font-size: 22px;
     border-radius: 50%;
     cursor: pointer; //make a clickable element
+  }
+}
+
+#numbers-frame {
+  .selected-true {
+    background-color:#e8e8e8;
+    color: #ddd;
+    cursor: not-allowed; // it not clickable anymore
   }
 }
