@@ -20554,15 +20554,49 @@ var ButtonFrame = function (_React$Component2) {
         key: 'render',
         value: function render() {
 
-            var disabled = this.props.selectedNumbers.length === 0;
+            var disabled = void 0;
+            var correctAnswer = this.props.correctAnswer;
+            var btnCorrectAnswer = void 0;
+
+            switch (correctAnswer) {
+                case true:
+                    btnCorrectAnswer = _react2.default.createElement(
+                        'button',
+                        { className: 'btn btn-success btn-lg', onClick: this.props.acceptAnswer },
+                        _react2.default.createElement('span', { className: 'glyphicon glyphicon-ok' })
+                    );
+                    break;
+                case false:
+                    btnCorrectAnswer = _react2.default.createElement(
+                        'button',
+                        { className: 'btn btn-danger btn-lg' },
+                        _react2.default.createElement('span', { className: 'glyphicon glyphicon-remove' })
+                    );
+                    break;
+                default:
+                    disabled = this.props.selectedNumbers.length === 0;
+                    btnCorrectAnswer = _react2.default.createElement(
+                        'button',
+                        { className: 'btn btn-primary btn-lg', disabled: disabled,
+                            onClick: this.props.checkAnswer },
+                        '='
+                    );
+            }
 
             return _react2.default.createElement(
                 'div',
                 { id: 'button-frame' },
+                btnCorrectAnswer,
+                _react2.default.createElement('br', null),
+                _react2.default.createElement('br', null),
                 _react2.default.createElement(
                     'button',
-                    { className: 'btn btn-primary btn-lg', disabled: disabled },
-                    '='
+                    { className: 'btn btn-warning btn-xs',
+                        onClick: this.props.redraw,
+                        disabled: this.props.amountOfRedraws === 0 },
+                    _react2.default.createElement('span', { className: 'glyphicon glyphicon-refresh' }),
+                    '\xA0',
+                    this.props.amountOfRedraws
                 )
             );
         }
@@ -20623,11 +20657,13 @@ var NumbersFrame = function (_React$Component4) {
 
             var count = 9;
             var selectedNumbers = this.props.selectedNumbers;
-            var numbers = [],
-                className = void 0;
+            var usedNumbers = this.props.usedNumbers;
+            var numbers = [];
+            var className = void 0;
 
             for (var i = 1; i <= count; i++) {
                 className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
+                className += " used-" + (usedNumbers.indexOf(i) >= 0);
                 numbers.push(_react2.default.createElement(
                     'div',
                     { key: i, onClick: this.props.selectNumber.bind(null, i), className: className },
@@ -20650,28 +20686,73 @@ var NumbersFrame = function (_React$Component4) {
     return NumbersFrame;
 }(_react2.default.Component);
 
-var Game = function (_React$Component5) {
-    _inherits(Game, _React$Component5);
+var DoneFrame = function (_React$Component5) {
+    _inherits(DoneFrame, _React$Component5);
+
+    function DoneFrame() {
+        _classCallCheck(this, DoneFrame);
+
+        return _possibleConstructorReturn(this, (DoneFrame.__proto__ || Object.getPrototypeOf(DoneFrame)).apply(this, arguments));
+    }
+
+    _createClass(DoneFrame, [{
+        key: 'render',
+        value: function render() {
+
+            return _react2.default.createElement(
+                'div',
+                { className: 'well text-center' },
+                _react2.default.createElement(
+                    'h2',
+                    null,
+                    this.props.doneStatus
+                ),
+                _react2.default.createElement(
+                    'button',
+                    { className: 'btn btn-default', onClick: this.props.resetGame },
+                    'Play again'
+                )
+            );
+        }
+    }]);
+
+    return DoneFrame;
+}(_react2.default.Component);
+
+var Game = function (_React$Component6) {
+    _inherits(Game, _React$Component6);
 
     function Game() {
         _classCallCheck(this, Game);
 
-        var _this5 = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
+        var _this6 = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
 
-        _this5.state = {
-            numberOfStars: Math.floor(Math.random() * 9) + 1, // produces random value between 1 and 9
-            selectedNumbers: []
+        _this6.state = {
+            numberOfStars: _this6.randomNumber(), // produces random value between 1 and 9
+            selectedNumbers: [],
+            correctAnswer: null,
+            usedNumbers: [],
+            amountOfRedraws: 5,
+            doneStatus: null
         };
-        return _this5;
+        return _this6;
     }
 
     _createClass(Game, [{
+        key: 'randomNumber',
+        value: function randomNumber() {
+            return Math.floor(Math.random() * 9) + 1;
+        }
+    }, {
         key: 'selectNumber',
         value: function selectNumber(clickedNumber) {
 
             if (this.state.selectedNumbers.indexOf(clickedNumber) < 0) {
                 var dbSelectedNumbers = this.state.selectedNumbers;
-                this.setState({ selectedNumbers: dbSelectedNumbers.concat(clickedNumber) });
+                this.setState({
+                    selectedNumbers: dbSelectedNumbers.concat(clickedNumber),
+                    correctAnswer: null
+                });
             }
         }
     }, {
@@ -20682,7 +20763,125 @@ var Game = function (_React$Component5) {
 
             selectedNumbers.splice(indexOfRemovedItem, 1);
 
-            this.setState({ selectedNumbers: selectedNumbers });
+            this.setState({
+                selectedNumbers: selectedNumbers,
+                correctAnswer: null
+            });
+        }
+    }, {
+        key: 'sumOfSelectedNumbers',
+        value: function sumOfSelectedNumbers() {
+            return this.state.selectedNumbers.reduce(function (op1, op2) {
+                return op1 + op2;
+            }, 0);
+        }
+    }, {
+        key: 'checkAnswer',
+        value: function checkAnswer() {
+            var correctAnswer = this.state.numberOfStars === this.sumOfSelectedNumbers();
+            this.setState({ correctAnswer: correctAnswer });
+        }
+    }, {
+        key: 'acceptAnswer',
+        value: function acceptAnswer() {
+            var usedNumbers = this.state.usedNumbers.concat(this.state.selectedNumbers);
+            this.setState({
+                selectedNumbers: [],
+                usedNumbers: usedNumbers,
+                correctAnswer: null,
+                numberOfStars: this.randomNumber()
+            }, function () {
+                this.updateDoneStatus();
+            });
+        }
+    }, {
+        key: 'redraw',
+        value: function redraw() {
+
+            if (this.state.amountOfRedraws <= 0) {
+                return;
+            }
+
+            this.setState({
+                numberOfStars: this.randomNumber(),
+                selectedNumbers: [],
+                correctAnswer: null,
+                amountOfRedraws: this.state.amountOfRedraws - 1
+            }, function () {
+                this.updateDoneStatus();
+            });
+        }
+
+        //bit.ly/s-pcs
+
+    }, {
+        key: 'possibleCombinationSum',
+        value: function possibleCombinationSum(arr, n) {
+            if (arr.indexOf(n) >= 0) {
+                return true;
+            }
+            if (arr[0] > n) {
+                return false;
+            }
+            if (arr[arr.length - 1] > n) {
+                arr.pop();
+                return this.possibleCombinationSum(arr, n);
+            }
+
+            var listSize = arr.length;
+            var combinationsCount = 1 << listSize;
+
+            for (var i = 1; i < combinationsCount; i++) {
+                var combinationSum = 0;
+                for (var j = 0; j < listSize; j++) {
+                    if (i & 1 << j) {
+                        combinationSum += arr[j];
+                    }
+                }
+                if (combinationSum === n) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }, {
+        key: 'possibleSolutions',
+        value: function possibleSolutions() {
+            var numberOfStars = this.state.numberOfStars;
+            var usedNumbers = this.state.usedNumbers;
+            var possilbeNumbers = [];
+
+            for (var i = 1; i <= 9; i++) {
+                if (usedNumbers.indexOf(i) < 0) {
+                    possilbeNumbers.push(i);
+                }
+            }
+
+            return this.possibleCombinationSum(possilbeNumbers, numberOfStars);
+        }
+    }, {
+        key: 'updateDoneStatus',
+        value: function updateDoneStatus() {
+            if (this.state.usedNumbers === 9) {
+                this.setState({ doneStatus: "Done. Nice!" });
+                return;
+            }
+            if (this.state.amountOfRedraws === 0 && !this.possibleSolutions()) {
+                this.setState({ doneStatus: "Game Over!" });
+            }
+        }
+    }, {
+        key: 'resetGame',
+        value: function resetGame() {
+            this.setState({
+                numberOfStars: this.randomNumber(), // produces random value between 1 and 9
+                selectedNumbers: [],
+                correctAnswer: null,
+                usedNumbers: [],
+                amountOfRedraws: 5,
+                doneStatus: null
+            });
         }
     }, {
         key: 'render',
@@ -20690,6 +20889,21 @@ var Game = function (_React$Component5) {
 
             var numberOfStars = this.state.numberOfStars;
             var selectedNumbers = this.state.selectedNumbers;
+            var correctAnswer = this.state.correctAnswer;
+            var usedNumbers = this.state.usedNumbers;
+            var amountOfRedraws = this.state.amountOfRedraws;
+            var doneStatus = this.state.doneStatus;
+
+            var resultFrame = void 0;
+
+            if (doneStatus) {
+                resultFrame = _react2.default.createElement(DoneFrame, { doneStatus: doneStatus,
+                    resetGame: this.resetGame.bind(this) });
+            } else {
+                resultFrame = _react2.default.createElement(NumbersFrame, { selectedNumbers: selectedNumbers,
+                    selectNumber: this.selectNumber.bind(this),
+                    usedNumbers: usedNumbers });
+            }
 
             return _react2.default.createElement(
                 'div',
@@ -20702,9 +20916,15 @@ var Game = function (_React$Component5) {
                 _react2.default.createElement('hr', null),
                 _react2.default.createElement('div', { className: 'clearfix' }),
                 _react2.default.createElement(StarsFrame, { numberOfStars: numberOfStars }),
-                _react2.default.createElement(ButtonFrame, { selectedNumbers: selectedNumbers }),
-                _react2.default.createElement(AnswerFrame, { selectedNumbers: selectedNumbers, unselectNumber: this.unselectNumber.bind(this) }),
-                _react2.default.createElement(NumbersFrame, { selectedNumbers: selectedNumbers, selectNumber: this.selectNumber.bind(this) })
+                _react2.default.createElement(ButtonFrame, { selectedNumbers: selectedNumbers,
+                    correctAnswer: correctAnswer,
+                    amountOfRedraws: amountOfRedraws,
+                    checkAnswer: this.checkAnswer.bind(this),
+                    acceptAnswer: this.acceptAnswer.bind(this),
+                    redraw: this.redraw.bind(this) }),
+                _react2.default.createElement(AnswerFrame, { selectedNumbers: selectedNumbers,
+                    unselectNumber: this.unselectNumber.bind(this) }),
+                resultFrame
             );
         }
     }]);
